@@ -36,6 +36,8 @@ export default {
 }
 ```
 
+### Hooks
+
 It supports the following hooks:
 
   * `beforeMount(props)` - Before the initial DOM element is created
@@ -113,7 +115,12 @@ This works particularly well with a [redux](https://github.com/rackt/redux) stor
 Using [redux-effects](https://github.com/redux-effects/redux-effects), you can also keep all side-effects out of your hooks and only return pure values, but that is optional.
 
 
+### Notes
 
+  * The `window.dispatchEvent` stuff is a temporary hack until I think of a better way of doing that.
+  * before/afterUnmount hooks are coming, but they are a bit tricky with virtual-dom.
+
+If you have any suggestions for either of these, please let me know.
 
 
 ## License
