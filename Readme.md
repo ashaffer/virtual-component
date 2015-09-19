@@ -52,6 +52,62 @@ import store from 'my-redux-store'
 listen(store.dispatch)
 ```
 
+### shouldUpdate
+
+By default your component assumes that your `props` are immutable, and will only update when there is a shallow change in your `props` object.  If you want to change this behavior, your component may export a `shouldUpdate` function:
+
+```javascript
+function shouldUpdate (nextProps, prevProps) {
+  return nextProps.someKey !== prevProps.someKey
+}
+
+function render (props) {
+  // ...Etc
+}
+
+export default {
+  render,
+  shouldUpdate
+}
+```
+
+### children
+
+The props object passed to your component has a single special property: `children`.  It consists of the child nodes (if any) of your component.  E.g.
+
+```
+function List (props) {
+  return (
+    <ul>
+      {
+        props.children.map(item => <li>{item}</li>)
+      }
+    </ul>
+  )
+}
+
+function PrimaryColors (props) {
+  return (
+    <List>
+      <span>red</span>
+      <span>green</span>
+      <span>blue</span>
+    </List>
+  )
+}
+```
+
+### Single function component
+
+If you don't want to use any hooks and you don't want to use `shouldUpdate`, as most of your components should, then you may just export a single function: `render`, with no object wrapper.  E.g.
+
+```javascript
+export default function render (props) {
+  // Render some stuff
+}
+```
+
+
 This works particularly well with a [redux](https://github.com/rackt/redux) store, and [vdux](https://github.com/ashaffer/vdux) bridge between [virtual-dom](https://github.com/Matt-Esch/virtual-dom) and redux.
 
 Using [redux-effects](https://github.com/redux-effects/redux-effects), you can also keep all side-effects out of your hooks and only return pure values, but that is optional.
