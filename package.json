@@ -2,7 +2,7 @@
   "name": "virtual-component",
   "description": "Components for virtual-dom",
   "repository": "git://github.com/ashaffer/virtual-component.git",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "main": "lib/index.js",
   "scripts": {
