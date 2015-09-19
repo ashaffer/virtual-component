@@ -10,6 +10,7 @@
     "postpublish": "rm -rf lib"
   },
   "dependencies": {
+    "get-uid": "^1.0.1",
     "shallow-equals": "0.0.0"
   },
   "devDependencies": {
