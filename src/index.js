@@ -8,26 +8,67 @@ import shallow from 'shallow-equals'
  * Virtual component
  */
 
-function component (comp, props) {
-  if (typeof comp === 'function') {
-    comp = {render: comp}
+class Component {
+  constructor (component, props) {
+    if (typeof component === 'function') {
+      component = {render: component}
+    }
+
+    this.type = 'Thunk'
+    this._shouldUpdate = component.shouldUpdate || notEqual
+    this.component = component
+    this.props = props
   }
 
-  const shouldUpdate = comp.shouldUpdate || notEqual
+  shouldUpdate (prev) {
+    if (shallow(this.props.children, prev.children)) {
+      this.props.children = prev.children
+    }
 
-  return {
-    props,
-    type: 'Thunk',
-    render(prev) {
-      if (!prev) return comp.render(props)
+    return this._shouldUpdate(this.props, prev)
+  }
 
-      if (shallow(props.children, prev.props.children)) {
-        props.children = prev.props.children
-      }
+  dispatch (name, action) {
+    const ev = new CustomEvent(name, {detail: action})
+    window.dispatchEvent(ev)
+  }
 
-      return shouldUpdate(props, prev.props)
-        ? comp.render(props)
-        : prev.vnode
+  beforeMount () {
+    if (this.component.beforeMount) {
+      this.dispatch(this.component.beforeMount(this.props))
+    }
+  }
+
+  beforeRender () {
+    if (this.component.beforeRender) {
+      this.dispatch(this.component.beforeRender(this.props))
+    }
+  }
+
+  render (prev) {
+    if (!prev) {
+      this.beforeMount()
+      setTimeout(() => this.afterMount())
+    }
+
+    if (!prev || this.shouldUpdate(prev.props)) {
+      this.beforeRender()
+      setTimeout(() => this.afterRender())
+      return this.component.render(this.props)
+    } else {
+      return prev.vnode
+    }
+  }
+
+  afterRender () {
+    if (this.component.afterRender) {
+      this.dispatch(this.component.afterRender(this.props))
+    }
+  }
+
+  afterMount () {
+    if (this.component.afterMount) {
+      this.dispatch(this.component.afterMount(this.props))
     }
   }
 }
@@ -40,4 +81,4 @@ function notEqual (cur, prev) {
  * Exports
  */
 
-export default component
+export default Component

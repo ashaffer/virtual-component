@@ -9,6 +9,57 @@ Components for virtual-dom
 
     $ npm install virtual-component
 
+## Usage
+
+virtual-component enables you to write react/deku style components in your virtual-dom application.  E.g.
+
+```javascript
+import fetch from 'declarative-fetch'
+
+function beforeMount (props) {
+  return actions.fetchStories(props.categoryId)
+}
+
+function render (props) {
+  return (
+    <div>
+      {
+        props.children.map(story => <Story story={story} />)
+      }
+    </div>
+  )
+}
+
+export default {
+  beforeMount,
+  render
+}
+```
+
+It supports the following hooks:
+
+  * `beforeMount` - Before the initial DOM element is created
+  * `beforeRender` - Before a new render
+  * `afterRender` - After the most recent render has been committed to the DOM
+  * `afterMount` - After the initial DOM element is rendered
+
+Each of these hooks takes a single argument: `props`.  And it may return a single-value, an action, which can be listened to at the top-level of your application, like so:
+
+```javascript
+import {listen} from 'virtual-component'
+import store from 'my-redux-store'
+
+listen(store.dispatch)
+```
+
+This works particularly well with a [redux](https://github.com/rackt/redux) store, and [vdux](https://github.com/ashaffer/vdux) bridge between [virtual-dom](https://github.com/Matt-Esch/virtual-dom) and redux.
+
+Using [redux-effects](https://github.com/redux-effects/redux-effects), you can also keep all side-effects out of your hooks and only return pure values, but that is optional.
+
+
+
+
+
 ## License
 
 The MIT License
