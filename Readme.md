@@ -38,9 +38,9 @@ export default {
 
 It supports the following hooks:
 
-  * `beforeMount` - Before the initial DOM element is created
-  * `beforeRender` - Before a new render
-  * `afterRender` - After the most recent render has been committed to the DOM
+  * `beforeMount(props)` - Before the initial DOM element is created
+  * `beforeUpdate(prevProps, nextProps)` - Before a state update (not called on initial render)
+  * `afterUpdate(prevProps, nextProps)` - After a state update (not called on initial render).
   * `afterMount` - After the initial DOM element is rendered
 
 Each of these hooks takes a single argument: `props`.  And it may return a single-value, an action, which can be listened to at the top-level of your application, like so:

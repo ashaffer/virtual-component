@@ -5,80 +5,73 @@
 import shallow from 'shallow-equals'
 
 /**
+ * Action event name
+ */
+
+const ActionEvent = 'virtual-component-action'
+
+/**
  * Virtual component
  */
 
-class Component {
-  constructor (component, props) {
-    if (typeof component === 'function') {
-      component = {render: component}
-    }
+function factory (component, props) {
+  const render = component.render || component
 
-    this.type = 'Thunk'
-    this._shouldUpdate = component.shouldUpdate || notEqual
-    this.component = component
-    this.props = props
-  }
+  return {
+    props,
+    type: 'Thunk',
+    render: function (prev) {
+      if (!prev) {
+        hook(component.beforeMount, props)
+        setTimeout(() => hook(component.afterMount, props))
+        return render(props)
+      }
 
-  shouldUpdate (prev) {
-    if (shallow(this.props.children, prev.children)) {
-      this.props.children = prev.children
-    }
-
-    return this._shouldUpdate(this.props, prev)
-  }
-
-  dispatch (name, action) {
-    const ev = new CustomEvent(name, {detail: action})
-    window.dispatchEvent(ev)
-  }
-
-  beforeMount () {
-    if (this.component.beforeMount) {
-      this.dispatch(this.component.beforeMount(this.props))
-    }
-  }
-
-  beforeRender () {
-    if (this.component.beforeRender) {
-      this.dispatch(this.component.beforeRender(this.props))
-    }
-  }
-
-  render (prev) {
-    if (!prev) {
-      this.beforeMount()
-      setTimeout(() => this.afterMount())
-    }
-
-    if (!prev || this.shouldUpdate(prev.props)) {
-      this.beforeRender()
-      setTimeout(() => this.afterRender())
-      return this.component.render(this.props)
-    } else {
-      return prev.vnode
-    }
-  }
-
-  afterRender () {
-    if (this.component.afterRender) {
-      this.dispatch(this.component.afterRender(this.props))
-    }
-  }
-
-  afterMount () {
-    if (this.component.afterMount) {
-      this.dispatch(this.component.afterMount(this.props))
+      if (shouldUpdate(component, prev.props, props)) {
+        hook(component.beforeUpdate, prev.props, props)
+        setTimeout(() => hook(component.afterUpdate, prev.props, props))
+        return render(props)
+      } else {
+        return prev.vnode
+      }
     }
   }
 }
 
-function notEqual (cur, prev) {
-  return !shallow(cur, prev)
+function shouldUpdate (component, prevProps, nextProps) {
+  if (prevProps && nextProps && shallow(prevProps.children, nextProps.children)) {
+    nextProps.children = prevProps.children
+  }
+
+  return component.shouldUpdate
+    ? component.shouldUpdate(prevProps, nextProps)
+    : !shallow(prevProps, nextProps)
+}
+
+function hook (fn, ...args) {
+  if (fn) {
+    const action = fn(...args)
+    action && dispatch(action)
+  }
+}
+
+function dispatch (action) {
+  const ev = new CustomEvent(ActionEvent, {detail: action})
+  setTimeout(() => window.dispatchEvent(ev))
+}
+
+function listen (fn) {
+  window.addEventListener(ActionEvent, listener, true)
+  return () => window.removeEventListener(ActionEvent, listener, true)
+
+  function listener (e) {
+    fn(e.detail)
+  }
 }
 
 /**
  * Exports
  */
 
-export default Component
+export default factory
+export {listen}
