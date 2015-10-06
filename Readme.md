@@ -45,6 +45,7 @@ It supports the following hooks:
   * `afterUpdate(prevProps, nextProps)` - After a state update (not called on initial render).
   * `afterMount(props)` - After the initial DOM element is rendered
   * `beforeUnmount(props)` - Before the DOM element is removed
+  * `transformProps(props)` - Transforms props before they are passed to any of the above.  Takes props as an argument, returns a new props object.
 
 Each of these hooks takes a single argument: `props`.  And it may return a single-value, an action, which can be listened to at the top-level of your application, like so:
 

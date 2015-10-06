@@ -17,7 +17,12 @@ const ActionEvent = 'virtual-component-action'
 
 function factory (component, props, children) {
   const render = component.render || component
+
   props.children = children
+
+  if (component.transformProps) {
+    props = component.transformProps(props)
+  }
 
   return {
     props,
@@ -26,6 +31,7 @@ function factory (component, props, children) {
     render (prev) {
       if (!prev || !isSameThunk(prev, this)) {
         this.hookKey = uid()
+        execHook(component.beforeMount, props)
         return applyHook(render(props), this.hookKey, createComponentHook(component, props))
       } else if (shouldUpdate(component, prev.props, props)) {
         execHook(component.beforeUpdate, prev.props, props)
@@ -58,22 +64,10 @@ function isSameThunk (prev, cur) {
 }
 
 function createComponentHook (component, props) {
-  const hook = createHook(
-    function hook () {
-      execHook(component.beforeMount, this.props)
-      setTimeout(() => execHook(component.afterMount, this.props))
-    },
-    function unhook () {
-      execHook(component.beforeUnmount, this.props)
-    }
-  )
-
-  hook.props = props
-  return hook
-}
-
-function createHook (hook, unhook) {
-  return Object.create({hook, unhook})
+  return Object.create({
+    hook: () => setTimeout(() => execHook(component.afterMount, props)),
+    unhook: () => execHook(component.beforeUnmount, props)
+  })
 }
 
 function shouldUpdate (component, prevProps, nextProps) {
@@ -90,6 +84,7 @@ function execHook (fn, ...args) {
   if (fn) {
     const action = fn(...args)
     action && dispatch(action)
+    return action
   }
 }
 
