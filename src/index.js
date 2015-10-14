@@ -92,6 +92,8 @@ function execHook (fn, ...args) {
 
 function dispatch (action) {
   const ev = new CustomEvent(ActionEvent, {detail: action})
+  // XXX This is a temporary solution until we settle on a better way of
+  // accomplishing this.  dispatchEvent is imperative and not universal.
   setTimeout(() => window.dispatchEvent(ev))
 }
 

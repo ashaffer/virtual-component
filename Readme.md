@@ -14,7 +14,7 @@ Components for virtual-dom
 virtual-component enables you to write react/deku style components in your virtual-dom application.  E.g.
 
 ```javascript
-import fetch from 'declarative-fetch'
+import {fetch} from 'redux-effects-fetch'
 
 function beforeMount (props) {
   return actions.fetchStories(props.categoryId)
@@ -47,7 +47,7 @@ It supports the following hooks:
   * `beforeUnmount(props)` - Before the DOM element is removed
   * `transformProps(props)` - Transforms props before they are passed to any of the above.  Takes props as an argument, returns a new props object.
 
-Each of these hooks takes a single argument: `props`.  And it may return a single-value, an action, which can be listened to at the top-level of your application, like so:
+Each of these hooks takes either a single argument `props` or `prevProps` and `nextProps`.  And it may return a single-value, an action (or array of actions, if using [redux-multi](https://github.com/ashaffer/redux-multi), which can be listened to at the top-level of your application, like this:
 
 ```javascript
 import {listen} from 'virtual-component'
