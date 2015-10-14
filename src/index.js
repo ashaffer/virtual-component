@@ -16,6 +16,8 @@ const ActionEvent = 'virtual-component-action'
  */
 
 function factory (component, props, children) {
+  if (!props) props = {}
+
   const render = component.render || component
 
   props.children = children
