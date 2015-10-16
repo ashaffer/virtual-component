@@ -31,15 +31,17 @@ function factory (component, props, children) {
     type: 'Thunk',
     component,
     render (prev) {
+      let vnode
+
       if (!prev || !isSameThunk(prev, this)) {
         this.hookKey = uid()
         execHook(component.beforeMount, props)
-        return applyHook(render(props), this.hookKey, createComponentHook(component, props))
+        return applyHook(chainThunks(render(props), this), this.hookKey, createComponentHook(component, props))
       } else if (shouldUpdate(component, prev.props, props)) {
         execHook(component.beforeUpdate, prev.props, props)
         setTimeout(() => execHook(component.afterUpdate, prev.props, props))
 
-        const vnode = render(props)
+        vnode = chainThunks(render(props), this)
         this.hookKey = prev.hookKey
         vnode.properties[this.hookKey] = prev.vnode.properties[this.hookKey]
         vnode.properties[this.hookKey].props = this.props
@@ -53,6 +55,20 @@ function factory (component, props, children) {
   }
 }
 
+function chainThunks (thunk, prev) {
+  if (!isThunk(thunk)) return thunk
+
+  const prevThunk = prev.nextThunk
+  prev.nextThunk = thunk
+  thunk.vnode = thunk.render(prevThunk)
+
+  return thunk.vnode
+}
+
+function isThunk (t) {
+  return t && t.type === 'Thunk'
+}
+
 function applyHook (vnode, key, hook) {
   vnode.hooks = vnode.hooks || {}
   vnode.properties = vnode.properties || {}
@@ -62,7 +78,7 @@ function applyHook (vnode, key, hook) {
 }
 
 function isSameThunk (prev, cur) {
-  return prev.type === 'Thunk' && prev.component === cur.component
+  return isThunk(prev) && prev.component === cur.component
 }
 
 function createComponentHook (component, props) {
